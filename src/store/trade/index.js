@@ -1,7 +1,7 @@
 import {reqAddressInfo,reqOrderInfo} from '@/api/index'
 const state = {
   addressInfo:[],
-  orderInfo:{}
+  orderInfo:{},
 }
 const mutations = {
   ADDRESSINFO(state,addressInfo){

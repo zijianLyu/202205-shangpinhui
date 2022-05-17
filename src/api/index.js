@@ -25,3 +25,6 @@ export const reqLogout = ()=>request({
 export const reqAddressInfo = ()=>request({url:'/user/userAddress/auth/findUserAddressList',method:'GET'})
 export const reqOrderInfo = ()=>request({url:'/order/auth/trade',method:'GET'})
 export const reqSubmitOrder = (tradeNo,data)=>request({url:`/order/auth/submitOrder?tradeNo=${tradeNo}`,data,method:'POST'})
+export const reqPayInfo = (orderId) =>request({url:`/payment/weixin/createNative/${orderId}`,method:'GET'})
+export const reqPayStatue = (orderId) =>request({url:`payment/weixin/queryPayStatus/${orderId}`,method:'GET'})
+export const reqMyOrderList = (page,limit)=>request({url:`/order/auth/${page}/${limit}`,method:'GET'})

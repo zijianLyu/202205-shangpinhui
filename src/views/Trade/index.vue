@@ -8,11 +8,11 @@
         v-for="(address, index) in addressInfo"
         :key="index"
       >
-        <span class="username selected">张三</span>
-        <p>
-          <span class="s1">北京市昌平区宏福科技园综合楼6层</span>
-          <span class="s2">15010658793</span>
-          <span class="s3">默认地址</span>
+        <span class="username" :class="{selected:address.isDefault==1}">{{address.consignee}}</span>
+        <p @click="changeDefault(address,addressInfo)">
+          <span class="s1">{{address.fullAddress}}</span>
+          <span class="s2">{{address.phoneNum}}</span>
+          <span class="s3" v-show="address.isDefault==1">默认地址</span>
         </p>
       </div>
       <div class="address clearFix">
@@ -59,7 +59,7 @@
         <ul
           class="list clearFix"
           v-for="(detailArray, index) in detailArrayList"
-          :key="index"
+          :key="detailArray.skuId"
         >
           <li>
             <img
@@ -146,12 +146,12 @@
       </ul>
     </div>
     <div class="trade">
-      <div class="price">应付金额:　<span>¥5399.00</span></div>
+      <div class="price">应付金额:　<span>¥{{orderInfo.totalAmount}}.00</span></div>
       <div class="receiveInfo">
         寄送至:
-        <span>北京市昌平区宏福科技园综合楼6层</span>
-        收货人：<span>张三</span>
-        <span>15010658793</span>
+        <span>{{userDefaultAddress.fullAddress}}</span>
+        收货人：<span>{{userDefaultAddress.consignee}}</span>
+        <span>{{userDefaultAddress.phoneNum}}</span>
       </div>
     </div>
     <div class="sub clearFix">
@@ -168,6 +168,7 @@ export default {
   data() {
     return {
       msg: "",
+      orderId:''
     };
   },
   mounted() {
@@ -176,47 +177,31 @@ export default {
   },
   methods: {
     changeDefault(address, addressInfo) {
-      addressInfo.forEach((item) => {
-        item.isDefault == 0;
-      });
+      addressInfo.forEach((item) => 
+        item.isDefault = 0
+      );
     address.isDefault = 1;
     },
     async submitOrder() {
-      const { tradeNo,orderDetailList } = this.orderInfo;
+      const { orderDetailList } = this.orderInfo.orderDetailVoList[0];
+      console.log(this.orderInfo.orderDetailVoList)
+      const {tradeNo} = this.orderInfo
       const data = {
-        consignee: "王五",
-        consigneeTel: "15011111111",
-        deliveryAddress: "北京市昌平区2",
-        paymentWay: "ONLINE",
-        orderComment: "xxx",
-        orderDetailList: orderDetailList
-        // [
-        //   {
-        //     id: null,
-        //     orderId: null,
-        //     skuId: 6,
-        //     skuName: " Apple iPhone 11 (A2223) 128GB 红色 移动联通电信22",
-        //     imgUrl:
-        //       "http://182.92.128.115:8080//rBFUDF6V0JmAG9XGAAGL4LZv5fQ163.png",
-        //     orderPrice: 4343,
-        //     skuNum: 2,
-        //     hasStock: null,
-        //   },
-        //   {
-        //     id: null,
-        //     orderId: null,
-        //     skuId: 4,
-        //     skuName: "Apple iPhone 11 (A2223) 128GB 红色",
-        //     imgUrl:
-        //       "http://182.92.128.115:80800/rBFUDF6VzaeANzIOAAL1X4gVWEE035.png",
-        //     orderPrice: 5999,
-        //     skuNum: 1,
-        //     hasStock: null,
-        //   },
-        // ],
+        consignee: this.userDefaultAddress.consignee, //最终收件人的名字
+        consigneeTel: this.userDefaultAddress.phoneNum, //最终收件人的手机号
+        deliveryAddress: this.userDefaultAddress.fullAddress, //收件人的地址
+        paymentWay: "ONLINE", //支付方式
+        orderComment: this.msg, //买家的留言信息
+        orderDetailList: orderDetailList, //商品清单
       };
       const result = await this.$API.reqSubmitOrder(tradeNo, data);
       console.log(result)
+      if(result.code==200){
+        this.orderId = result.data
+        this.$router.push('/pay?orderId='+this.orderId);
+      }else{
+        alert(result.message)
+      }
     },
   },
   computed: {

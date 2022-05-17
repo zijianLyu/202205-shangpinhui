@@ -7,8 +7,8 @@
           <span class="success-info">订单提交成功，请您及时付款，以便尽快为您发货~~</span>
         </h4>
         <div class="paymark">
-          <span class="fl">请您在提交订单<em class="orange time">4小时</em>之内完成支付，超时订单会自动取消。订单号：<em>145687</em></span>
-          <span class="fr"><em class="lead">应付金额：</em><em class="orange money">￥17,654</em></span>
+          <span class="fl">请您在提交订单<em class="orange time">4小时</em>之内完成支付，超时订单会自动取消。订单号：<em>{{orderId}}</em></span>
+          <span class="fr"><em class="lead">应付金额：</em><em class="orange money" v-if="payInfo">￥{{payInfo.totalFee}}</em></span>
         </div>
       </div>
       <div class="checkout-info">
@@ -32,7 +32,7 @@
         <div class="step-cont">
           <ul class="payType">
             <li><img src="./images/pay2.jpg"></li>
-            <li><img src="./images/pay3.jpg"></li>
+            <li><img src="./images/pay3.jpg" ></li>
           </ul>
 
         </div>
@@ -65,7 +65,7 @@
         <div class="hr"></div>
 
         <div class="submit">
-          <router-link class="btn" to="/paysuccess">立即支付</router-link>
+          <a class="btn" @click="goWeixinPay">立即支付</a>
         </div>
         <div class="otherpay">
           <div class="step-tit">
@@ -82,8 +82,84 @@
 </template>
 
 <script>
+import QRCode from 'qrcode'
   export default {
     name: 'Pay',
+    data() {
+      return {
+        payInfo:{},
+        orderId:this.$route.query.orderId,
+        timer:null,
+        code:''
+      }
+    },
+    mounted(){
+      this.getPayInfo()
+    },
+    methods:{
+      async getPayInfo(){
+        const result = await this.$API.reqPayInfo(this.orderId)
+        if(result.code==200){
+          this.payInfo = result.data
+        }
+      },
+      async goWeixinPay(){
+        console.log(this.payInfo)
+        const result = await QRCode.toDataURL(this.payInfo.codeUrl)
+        this.$alert(`<img src="${result}" />`, '请微信支付', {
+          //是否将 message 属性作为 HTML 片段处理
+          dangerouslyUseHTMLString: true,
+          //是否居中布局
+          center:true,
+          //是否显示取消按钮
+          showCancelButton:true,
+          //取消按钮的文本内容	
+          cancelButtonText:'支付遇见问题',
+          // 确定按钮的自定义类名
+          confirmButtonText:'已成功支付',
+          //MessageBox 是否显示右上角关闭按钮
+          showClose:false,
+          beforeClose:(type,instance,done)=>{
+            console.log(type)
+            if(type=='cancel'){
+              alert('请联系管理员')
+              clearInterval(this.timer)
+              this.timer = null    
+              done()
+            }else{
+              // if(this.code==200){
+                clearInterval(this.timer)
+                this.timer = null
+                this.$msgbox.close()
+                this.$router.push({path:'/paysuccess'})
+              // }else{
+                if(this.code!==200){
+                alert('支付未成功')
+                clearInterval(this.timer)
+                this.timer = null
+                this.$msgbox.close()
+                }
+              // }
+            }
+          }
+        });
+        if(!this.timer){
+          this.timer = setInterval(async () => {
+            const result = await this.$API.reqPayStatue(this.orderId) 
+            console.log(result)
+            if(result.code==200){
+              clearInterval(this.timer)
+              this.timer = null
+              this.code = result.code
+              // this.$msgbox.close()
+              // this.$router.push({path:'/paysuccess'})
+            }
+          }, 1000);
+        }
+      }
+    },
+    computed:{
+    }
   }
 </script>
 

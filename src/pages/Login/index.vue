@@ -79,7 +79,12 @@
         const {phone,password} = this
         try {
         const result = (phone&&password) && await this.$store.dispatch('userLogin',{phone,password})
-        this.$router.push({path:'/home'})
+        console.log(this.$route.query)
+        if(this.$route.query){
+          this.$router.push({path:`${this.$route.query.redirect}`})          
+        }else{
+          this.$router.push({path:'/home'})
+        }
         alert(result)
         } catch (error) {
           alert(error.message)

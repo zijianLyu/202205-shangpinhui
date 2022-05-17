@@ -14,6 +14,22 @@ Vue.component(Carousel.name,Carousel)
 import {reqCategoryList,reqGetSearchInfo} from '@/api'
 import "@/mock/mockServer"
 import 'swiper/css/swiper.css'
+import { Button, MessageBox } from 'element-ui';
+Vue.component(Button.name, Button);
+Vue.prototype.$msgbox = MessageBox;
+Vue.prototype.$alert = MessageBox.alert;
+import VueLazyload from 'vue-lazyload'
+import MyPlugin from '@/plugins/myPlugins'
+import "@/plugins/validate";
+Vue.use(MyPlugin,{
+  name:'hellolazj'
+})
+Vue.use(VueLazyload, {
+  preLoad: 1.3,
+  error: 'dist/error.png',
+  loading: 'dist/loading.gif',
+  attempt: 1
+})
 reqCategoryList();
 new Vue({
   render: h => h(App),

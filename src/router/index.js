@@ -53,7 +53,12 @@ router.beforeEach( async (to, from, next) => {
       }
     }
   }else{
-    next()
+    let toPath = to.path
+    if(toPath == '/trade' || toPath.indexOf('/pay')!=-1 || toPath=='/myorder'){
+      next('/login?redirect='+toPath)
+    }else{
+      next()
+    }
   }
   // if(token){
   //   if(to.path=='/login'||to.path=='/register')
