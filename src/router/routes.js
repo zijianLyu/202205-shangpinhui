@@ -96,7 +96,7 @@ export default[
         }
       },
       {
-        path:'groupview',
+        path:'/groupview',
         component:()=>import('@/views/Center/groupView'),
         meta:{
           show:true
